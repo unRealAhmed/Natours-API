@@ -5,10 +5,7 @@ const tourRouter = require('./routes/tourRoutes')
 const userRouter = require('./routes/userRoutes')
 
 const app = express()
-
-app.use('/api/v1/tours', tourRouter)
-app.use('/api/v1/users', userRouter)
-
+app.use(express.json())
 // Connect to the database within a try-catch block
 try {
   mongoose.connect(process.env.DATABASE_URL.replace('<password>', process.env.DATABASE_PASSWORD)).then(() => {
@@ -18,8 +15,8 @@ try {
   console.error(`Error connecting to the database: ${error.message}`);
 }
 
-
-
+app.use('/api/v1/tours', tourRouter)
+app.use('/api/v1/users', userRouter)
 
 ///// Starting server
 
