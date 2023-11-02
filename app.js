@@ -1,28 +1,25 @@
-require('dotenv').config({ path: "./config.env" })
-const express = require('express')
-const mongoose = require('mongoose')
-const tourRouter = require('./routes/tourRoutes')
-const userRouter = require('./routes/userRoutes')
+require('dotenv').config({ path: './config.env' });
+const express = require('express');
 
-const app = express()
-app.use(express.json())
-// Connect to the database within a try-catch block
-try {
-  mongoose.connect(process.env.DATABASE_URL.replace('<password>', process.env.DATABASE_PASSWORD)).then(() => {
-    console.log(`Database Connected Successfully...`);
-  });
-} catch (error) {
-  console.error(`Error connecting to the database: ${error.message}`);
-}
+const app = express();
+const port = process.env.PORT || 8000;
 
-app.use('/api/v1/tours', tourRouter)
-app.use('/api/v1/users', userRouter)
+// Middleware
+app.use(express.json());
 
-///// Starting server
+// Import and invoke the database connection function
+const connectDatabase = require('./utilities/database');
 
-const port = 8000 || process.env.PORT
+connectDatabase();
+
+// Routers
+const tourRouter = require('./routes/tourRoutes');
+const userRouter = require('./routes/userRoutes');
+
+app.use('/api/v1/tours', tourRouter);
+app.use('/api/v1/users', userRouter);
+
+// Start the server
 app.listen(port, () => {
-  console.log(`Server Listening To Requests On Port ${port}...`);
-})
-
-
+  console.log(`Server is listening on port ${port}...`);
+});
