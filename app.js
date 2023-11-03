@@ -1,16 +1,11 @@
 require('dotenv').config({ path: './config.env' });
 const express = require('express');
+const errorController = require('./Controllers/errorController');
 
 const app = express();
-const port = process.env.PORT || 8000;
 
 // Middleware
 app.use(express.json());
-
-// Import and invoke the database connection function
-const connectDatabase = require('./utilities/database');
-
-connectDatabase();
 
 // Routers
 const tourRouter = require('./routes/tourRoutes');
@@ -18,9 +13,17 @@ const userRouter = require('./routes/userRoutes');
 
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
-
-// Start the server
-app.listen(port, () => {
-  console.log(`Server is listening on port ${port}...`);
-});
 /////
+
+app.all("*", (req, _, next) => {
+  const err = new Error(`Can't Find ${req.originalUrl}`);
+  err.status = "fail";
+  err.statusCode = 404;
+
+  next(err);
+});
+
+app.use(errorController)
+
+/////
+module.exports = app
