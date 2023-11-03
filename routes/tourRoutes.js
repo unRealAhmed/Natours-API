@@ -4,6 +4,8 @@ const tourController = require('../Controllers/tourController');
 const router = express.Router();
 
 // Define routes for the Tours
+router.route('/tours-Stats').get(tourController.getTourStatistics)
+
 router.route('/')
   .get(tourController.getAllTours)
   .post(tourController.createTour);
