@@ -9,6 +9,7 @@ router.route('/signup').post(authController.signUp)
 router.route('/login').post(authController.login)
 router.route('/forgetPassword').post(authController.forgetPassword)
 router.route('/resetPassword/:token').patch(authController.resetPassword)
+router.route('/updateMyPassword').patch(authController.protect, authController.updatePassword)
 
 router.route('/').get(userController.getAllUsers)
 

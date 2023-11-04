@@ -93,16 +93,22 @@ userSchema.pre('save', async function (next) {
 });
 
 userSchema.methods.createPasswordResetToken = function () {
+  // Generate a random reset token
   const resetToken = crypto.randomBytes(32).toString("hex");
 
+  // Hash the token and set it on the user
   this.passwordResetToken = crypto
     .createHash("sha256")
     .update(resetToken)
     .digest("hex");
 
+  // Set an expiration time for the token (10 minutes)
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  // Return the unhashed token for use in the email
   return resetToken;
 };
+
 
 // Create a mongoose model for the user
 const User = mongoose.model("User", userSchema);
