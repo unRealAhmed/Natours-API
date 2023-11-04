@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { default: validator } = require("validator");
 const bcrypt = require("bcrypt");
-// const crypto = require("crypto");
+const crypto = require("crypto");
 
 // Create a new mongoose schema for the user
 const userSchema = new mongoose.Schema({
@@ -85,14 +85,24 @@ userSchema.pre('save', async function (next) {
     // Set passwordConfirm to undefined as it's no longer needed
     this.passwordConfirm = undefined;
 
-    // If the document is not new, update the passwordChangedAt field
     if (!this.isNew) this.passwordChangedAt = Date.now() - 1000;
-
     next();
   } catch (error) {
     return next(error);
   }
 });
+
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+  return resetToken;
+};
 
 // Create a mongoose model for the user
 const User = mongoose.model("User", userSchema);
