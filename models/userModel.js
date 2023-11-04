@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { default: validator } = require("validator");
 const bcrypt = require("bcrypt");
-const crypto = require("crypto");
+// const crypto = require("crypto");
 
 // Create a new mongoose schema for the user
 const userSchema = new mongoose.Schema({
@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
   },
   photo: {
     type: String,
-    default: "default.jpg",
+    // default: "default.jpg",
   },
   role: {
     type: String,
@@ -44,14 +44,44 @@ const userSchema = new mongoose.Schema({
     },
   },
   passwordChangedAt: Date,
-  passwordResetToken: String,
-  passwordResetExpires: Date,
+  // passwordResetToken: String,
+  // passwordResetExpires: Date,
   // User account status (active or inactive)
   active: {
     type: Boolean,
     default: true,
     select: false, // Hide active field from query results
   },
+});
+//
+
+userSchema.methods.passwordMatching = async function (
+  enteredPassword,
+  userPassword
+) {
+  return await bcrypt.compare(enteredPassword, userPassword);
+};
+
+//
+userSchema.pre('save', async function (next) {
+  // Check if the password field has been modified (e.g., during user registration or update)
+  if (!this.isModified('password')) return next();
+  try {
+    // Generate a salt with a cost factor of 12
+    const salt = await bcrypt.genSalt(12);
+
+    this.password = await bcrypt.hash(this.password, salt);
+
+    // Set passwordConfirm to undefined as it's no longer needed
+    this.passwordConfirm = undefined;
+
+    // If the document is not new, update the passwordChangedAt field
+    if (!this.isNew) this.passwordChangedAt = Date.now() - 1000;
+
+    next();
+  } catch (error) {
+    return next(error);
+  }
 });
 
 // Create a mongoose model for the user
