@@ -44,8 +44,8 @@ const userSchema = new mongoose.Schema({
     },
   },
   passwordChangedAt: Date,
-  // passwordResetToken: String,
-  // passwordResetExpires: Date,
+  passwordResetToken: String,
+  passwordResetExpires: Date,
   // User account status (active or inactive)
   active: {
     type: Boolean,
@@ -61,6 +61,16 @@ userSchema.methods.passwordMatching = async function (
 ) {
   return await bcrypt.compare(enteredPassword, userPassword);
 };
+
+userSchema.methods.changedPasswordAfter = function (tokenIssuedAt) {
+  if (this.passwordChangedAt) {
+    // Convert passwordChangedAt timestamp to seconds
+    const changedTimestamp = this.passwordChangedAt.getTime() / 1000;
+    return tokenIssuedAt < changedTimestamp;
+  }
+  return false;
+};
+
 
 //
 userSchema.pre('save', async function (next) {
