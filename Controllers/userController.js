@@ -26,9 +26,12 @@ exports.getMe = (req, res, next) => {
 };
 
 exports.getUser = asyncHandler(async (req, res, next) => {
-  res.status(201).json({
+
+  const user = await User.findById(req.params.id).select('-__v')
+
+  res.status(200).json({
     status: "success",
-    message: "User Here...."
+    data: user
   })
 })
 
