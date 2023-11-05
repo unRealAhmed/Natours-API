@@ -122,6 +122,17 @@ const tourSchema = new mongoose.Schema({
       day: Number
     }
   ]
+}, {
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+
+// Virtual populate
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id'
 });
 
 // Pre-save middleware to create a slug for the tour based on its name
@@ -133,6 +144,17 @@ tourSchema.pre('save', function (next) {
 // Pre-find middleware to exclude secret tours from the query results
 tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
+  next();
+});
+
+tourSchema.pre(/^findOne/, function (next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v'
+  }).populate({
+    path: 'reviews',
+    select: '-__v'
+  }).select('-__v')
   next();
 });
 
