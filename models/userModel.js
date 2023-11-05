@@ -55,6 +55,7 @@ const userSchema = new mongoose.Schema({
 });
 //
 
+//COMAPREING PASSWORDS
 userSchema.methods.passwordMatching = async function (
   enteredPassword,
   userPassword
@@ -62,6 +63,7 @@ userSchema.methods.passwordMatching = async function (
   return await bcrypt.compare(enteredPassword, userPassword);
 };
 
+//PASSWORD CHANGE CHECKER
 userSchema.methods.changedPasswordAfter = function (tokenIssuedAt) {
   if (this.passwordChangedAt) {
     // Convert passwordChangedAt timestamp to seconds
@@ -72,7 +74,7 @@ userSchema.methods.changedPasswordAfter = function (tokenIssuedAt) {
 };
 
 
-//
+//HASH PASSWORD
 userSchema.pre('save', async function (next) {
   // Check if the password field has been modified (e.g., during user registration or update)
   if (!this.isModified('password')) return next();
@@ -92,6 +94,7 @@ userSchema.pre('save', async function (next) {
   }
 });
 
+//PASSWORD RESET TOKEN GENERATOR
 userSchema.methods.createPasswordResetToken = function () {
   // Generate a random reset token
   const resetToken = crypto.randomBytes(32).toString("hex");
