@@ -127,6 +127,10 @@ const tourSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
+// Indexing to improve perofrmance
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+tourSchema.index({ startLocation: '2dsphere' });
 
 // Virtual populate
 tourSchema.virtual('reviews', {
@@ -147,6 +151,7 @@ tourSchema.pre(/^find/, function (next) {
   next();
 });
 
+// Middleware to populate the 'guides' and 'reviews' fields
 tourSchema.pre(/^findOne/, function (next) {
   this.populate({
     path: 'guides',

@@ -1,8 +1,11 @@
 const express = require('express');
 const tourController = require('../Controllers/tourController');
 const authController = require('../Controllers/authController');
+const reviewRouter = require('./reviewRoutes');
 
 const router = express.Router();
+
+router.use('/:tourId/reviews', reviewRouter);
 
 router.route('/tours-stats').get(tourController.getTourStatistics);
 router
@@ -12,6 +15,9 @@ router
     authController.restrictTo('admin', 'lead-guide', 'guide'),
     tourController.getMonthlyPlan
   );
+
+router.route("/top-5-cheapest")
+  .get(tourController.getTopFiveCheapestTours, tourController.getAllTours);
 
 router
   .route('/')
