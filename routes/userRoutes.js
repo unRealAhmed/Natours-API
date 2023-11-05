@@ -1,22 +1,33 @@
-const express = require('express')
-const userController = require('../Controllers/userController')
-const authController = require('../Controllers/authController')
+const express = require('express');
+const userController = require('../Controllers/userController');
+const authController = require('../Controllers/authController');
 
-const router = express()
+const router = express.Router();
 
+router.post('/signup', authController.signUp);
+router.post('/login', authController.login);
+router.post('/forgotPassword', authController.forgetPassword);
+router.patch('/resetPassword/:token', authController.resetPassword);
 
-router.route('/signup').post(authController.signUp)
-router.route('/login').post(authController.login)
-router.route('/forgetPassword').post(authController.forgetPassword)
-router.route('/resetPassword/:token').patch(authController.resetPassword)
-router.route('/updateMyPassword').patch(authController.protect, authController.updatePassword)
+// Protect all routes after this middleware
+router.use(authController.protect);
 
-router.route('/').get(userController.getAllUsers)
+router.patch('/updateMyPassword', authController.updatePassword);
+router.get('/me', userController.getMe, userController.getUser);
+router.patch('/updateMe', userController.updateMe);
+router.delete('/deleteMe', userController.deleteMe);
 
-router.route('/:id')
-  .get(authController.protect, userController.getUser)
-  .post(userController.createUser)
+router.use(authController.restrictTo('admin'));
+
+router
+  .route('/')
+  .get(userController.getAllUsers)
+  .post(userController.createUser);
+
+router
+  .route('/:id')
+  .get(userController.getUser)
   .patch(userController.updateUser)
-  .delete(userController.deleteUser)
+  .delete(userController.deleteUser);
 
-module.exports = router
+module.exports = router;

@@ -19,6 +19,7 @@ const sendTokenResponse = (res, user, statusCode) => {
   });
 };
 
+//SIGNUP
 exports.signUp = asyncHandler(async (req, res, next) => {
   const newUser = await User.create({
     name: req.body.name,
@@ -32,6 +33,7 @@ exports.signUp = asyncHandler(async (req, res, next) => {
   sendTokenResponse(res, newUser, 201);
 });
 
+//LOGIN
 exports.login = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -58,7 +60,19 @@ exports.login = asyncHandler(async (req, res, next) => {
   sendTokenResponse(res, user, 200);
 });
 
+//LOGOUT
+exports.logout = (req, res) => {
+  res.cookie("jwt", "loggedout", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV !== "development",
+    sameSite: "strict",
+    maxAge: new Date(Date.now() + 10 * 1000), // Set the cookie to expire in 10 seconds
+  });
 
+  res.status(200).json({ status: "success", message: 'You have been logged out.' });
+};
+
+//PROTECT ROUTES
 exports.protect = asyncHandler(async (req, res, next) => {
   // 1) Get the token from the request's authorization header
   let token;
@@ -102,6 +116,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
   next();
 });
 
+//FORGET PASSWORD
 exports.forgetPassword = asyncHandler(async (req, res, next) => {
   // 1) Find the user by their email
   const user = await User.findOne({ email: req.body.email });
@@ -143,6 +158,7 @@ exports.forgetPassword = asyncHandler(async (req, res, next) => {
   }
 });
 
+//RESET PASSWORD
 exports.resetPassword = asyncHandler(async (req, res, next) => {
   // 1) Decrypt the token and find the user
   const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
@@ -168,6 +184,7 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
   sendTokenResponse(res, user, 200);
 });
 
+//UPDATE PASSWORD
 exports.updatePassword = asyncHandler(async (req, res, next) => {
   // 1) Find the user by ID and select the password field
   const user = await User.findById(req.user._id).select("+password");
@@ -192,3 +209,15 @@ exports.updatePassword = asyncHandler(async (req, res, next) => {
   sendTokenResponse(res, user, 201);
 });
 
+exports.restrictTo = (...permittedRoles) => (req, res, next) => {
+  const userRole = req.user.role;
+
+  if (permittedRoles.includes(userRole)) {
+    // If the user's role is included in the permitted roles, grant access.
+    next();
+  } else {
+    // If the user's role is not included in the permitted roles, deny access.
+    const errorMessage = `You don't have permission to perform this action.`;
+    return res.status(403).json({ status: 'fail', message: errorMessage });
+  }
+};
