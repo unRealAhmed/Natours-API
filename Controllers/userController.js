@@ -1,54 +1,36 @@
 const User = require("../models/userModel")
 const asyncHandler = require("../utilities/asyncHandler")
 const AppError = require("../utilities/appErrors")
+const resourceController = require("./resourceController")
+
+////////// Admin Access
+
+exports.getAllUsers = resourceController.getAll(User)
+exports.getUser = resourceController.getOne(User)
+exports.createUser = resourceController.createOne(User)
+exports.updateUser = resourceController.updateOne(User)
+exports.deleteUser = resourceController.deleteOne(User)
+
+//////////
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
   Object.keys(obj).forEach(el => {
-    if (allowedFields.includes(el)) newObj[el] = obj[el];
+    // If the property is in the list of allowed fields, add it to the new object
+    if (allowedFields.includes(el)) {
+      newObj[el] = obj[el];
+    }
   });
   return newObj;
 };
 
-exports.getAllUsers = asyncHandler(async (req, res, next) => {
-
-  const users = await User.find()
-
-  res.status(200).json({
-    status: "success",
-    data: users
-  })
-})
-
 exports.getMe = (req, res, next) => {
+  // Set the user's ID in the request parameters for retrieving the user's data
   req.params.id = req.user.id;
   next();
 };
 
-exports.getUser = asyncHandler(async (req, res, next) => {
-
-  const user = await User.findById(req.params.id).select('-__v')
-
-  res.status(200).json({
-    status: "success",
-    data: user
-  })
-})
-
-exports.createUser = (req, res, next) => {
-  res.status(201).json({
-    status: "success",
-    message: "Created User Here...."
-  })
-}
-
-exports.updateUser = (req, res, next) => {
-  res.status(200).json({
-    status: "success",
-    message: "Updated User Here...."
-  })
-}
-
+// Update user data except for password
 exports.updateMe = asyncHandler(async (req, res, next) => {
   // 1) Check if the request includes password-related fields; if so, disallow updates
   if (req.body.password || req.body.passwordConfirm) {
@@ -76,14 +58,9 @@ exports.updateMe = asyncHandler(async (req, res, next) => {
   });
 });
 
-exports.deleteUser = (req, res, next) => {
-  res.status(204).json({
-    status: "success",
-    data: null
-  })
-}
-
+// Deactivate user
 exports.deleteMe = asyncHandler(async (req, res, next) => {
+  // Deactivate the user's account by updating the 'active' field to 'false'
   await User.findByIdAndUpdate(req.user.id, { active: false });
 
   res.status(204).json({

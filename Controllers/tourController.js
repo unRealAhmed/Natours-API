@@ -1,69 +1,19 @@
 const Tour = require('../models/tourModel')
-const APIFeatures = require('../utilities/apiFeatures')
 const asyncHandler = require('../utilities/asyncHandler')
-const AppError = require('../utilities/appErrors')
+const resourceController = require('./resourceController')
 
-exports.getAllTours = asyncHandler(async (req, res, next) => {
-  const features = new APIFeatures(Tour.find(), req.query)
-    .filter()
-    .sort()
-    .paginate()
-    .selectFields()
-  const tours = await features.query
-  res.status(200).json({
-    status: "success",
-    results: tours.length,
-    data: {
-      tours
-    }
-  })
-})
 
-exports.getTour = asyncHandler(async (req, res, next) => {
-  const tour = await Tour.findById(req.params.id)
-  if (!tour) return next(new AppError("No tour found with this ID"), 404);
-  res.status(200).json({
-    status: "success",
-    data: {
-      tour
-    }
-  })
-})
+exports.getAllTours = resourceController.getAll(Tour)
+exports.getTour = resourceController.getOne(Tour)
+exports.createTour = resourceController.createOne(Tour)
+exports.updateTour = resourceController.updateOne(Tour)
+exports.deleteTour = resourceController.deleteOne(Tour)
 
-exports.createTour = asyncHandler(async (req, res, next) => {
-  const newTour = await Tour.create(req.body);
-
-  res.status(201).json({
-    status: "success",
-    data: {
-      newTour
-    }
-  });
+exports.getTopFiveCheapestTours = asyncHandler(async (req, res, next) => {
+  req.query.limit = 5;
+  req.query.sort = '-ratingsAverage,price';
+  next();
 });
-
-
-exports.updateTour = asyncHandler(async (req, res) => {
-  const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true
-  });
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tour
-    }
-  });
-});
-
-
-exports.deleteTour = asyncHandler(async (req, res, next) => {
-  await Tour.findByIdAndDelete(req.params.id)
-
-  res.status(204).json({
-    status: "success",
-    data: null
-  })
-})
 
 exports.getTourStatistics = asyncHandler(async (req, res, next) => {
   // Calculate tour statistics
