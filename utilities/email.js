@@ -11,13 +11,11 @@ module.exports = class Email {
   // Create a new email transport based on the environment
   newTransport() {
     if (process.env.NODE_ENV === 'production') {
-      // Production environment, use Sendgrid
       return nodemailer.createTransport({
-        host: process.env.EMAIL_HOST,
-        port: process.env.EMAIL_PORT,
+        service: 'gmail',
         auth: {
-          user: process.env.EMAIL_USERNAME,
-          pass: process.env.EMAIL_PASSWORD,
+          user: process.env.GOOGLE_EMAIL,
+          pass: process.env.GOOGLE_PASS_KEY,
         },
       });
     }
