@@ -1,3 +1,5 @@
+const multer = require("multer")
+const sharp = require("sharp")
 const User = require("../models/userModel")
 const asyncHandler = require("../utilities/asyncHandler")
 const AppError = require("../utilities/appErrors")
@@ -12,6 +14,48 @@ exports.updateUser = resourceController.updateOne(User)
 exports.deleteUser = resourceController.deleteOne(User)
 
 //////////
+
+const multerStorage = multer.memoryStorage();
+
+// Check if the uploaded file is an image
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image')) {
+    // Allow the upload
+    cb(null, true);
+  } else {
+    // Reject the upload
+    cb(new AppError('Not an image! Please upload only images.', 400), false);
+  }
+};
+
+// Set up multer with the defined storage and file filtering
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter
+});
+
+// Middleware to handle single photo upload
+exports.uploadUserPhoto = upload.single('photo');
+
+// Middleware to resize the uploaded user photo
+exports.resizeUserPhoto = asyncHandler(async (req, res, next) => {
+  // Check if there's no file to process
+  if (!req.file) return next();
+
+  // Generate a unique filename
+  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+
+  // Resize the image and convert it to jpeg format with quality adjustment
+  await sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/users/${req.file.filename}`);
+
+  next();
+});
+
+
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
