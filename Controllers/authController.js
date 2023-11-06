@@ -5,7 +5,7 @@ const asyncHandler = require('../utilities/asyncHandler')
 const User = require('../models/userModel')
 const createToken = require('../utilities/createToken')
 const AppError = require('../utilities/appErrors')
-const sendEmail = require('../utilities/email')
+const Email = require('../utilities/email')
 
 // Helper function to send JWT token as a response
 const sendTokenResponse = (res, user, statusCode) => {
@@ -29,6 +29,11 @@ exports.signUp = asyncHandler(async (req, res, next) => {
   });
 
   newUser.password = undefined;
+
+  const url = `${req.protocol}://${req.get('host')}/me`
+  const message = `Welcome to the Natours community, ${newUser.name}! 🌍 We're thrilled to have you join us on this exciting adventure. Get ready to explore breathtaking destinations, make new friends, and create unforgettable memories. Start your journey now and let's make every trip extraordinary together! 🎉✈️`
+
+  await new Email(newUser, url).sendWelcomeEmail('Welcome To Natours Family', message)
 
   sendTokenResponse(res, newUser, 201);
 });
@@ -129,16 +134,20 @@ exports.forgetPassword = asyncHandler(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   // 3) Construct the reset URL and email it to the user
-  const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${passwordResetToken}`;
-  const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email.`;
 
   try {
     // 4) Send the password reset email
-    await sendEmail({
-      email: user.email,
-      subject: 'Your password reset token (valid for 10 minutes)',
-      message,
-    });
+    const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${passwordResetToken}`;
+    const message = `Oops, did you forget your password? No worries! We've got you covered. Simply click on the link below to reset your password and regain access to your Natours account:
+
+    ${resetURL}
+    
+    If you didn't initiate this request, please disregard this email. Your account's security is important to us.
+    
+    Safe travels,
+    The Natours Team 🌍`;
+    const subject = "Password Reset Request for Your Natours Account 🛡️"
+    await new Email(user, resetURL).sendPasswordResetEmail(subject, message)
 
     res.status(200).json({
       status: 'success',
