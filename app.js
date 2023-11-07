@@ -6,10 +6,14 @@ const helmet = require("helmet");
 const xss = require("xss-clean");
 const hpp = require("hpp");
 const cookieParser = require('cookie-parser');
+const cors = require("cors");
+const compression = require("compression");
+const { webhookCheckout } = require("./Controllers/bookingController");
 
 const app = express();
 
-// Middleware
+// Middlewares
+app.use(compression());
 app.use(express.json({ limit: '100kb' }));
 app.use(helmet());
 app.use(mongoSanitize());
@@ -34,6 +38,14 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(cors());
+app.options("*", cors());
+
+app.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  webhookCheckout
+);
 
 // Routers
 const tourRouter = require('./routes/tourRoutes');
@@ -47,6 +59,8 @@ app.use('/api/v1/reviews', reviewRouter);
 app.use('/api/v1/bookings', bookingRouter);
 /////
 
+// Error Handler
+
 app.all("*", (req, _, next) => {
   const err = new Error(`Can't Find ${req.originalUrl}`);
   err.status = "fail";
@@ -54,8 +68,6 @@ app.all("*", (req, _, next) => {
 
   next(err);
 });
-
-// Error Handler
 const errorController = require('./Controllers/errorController');
 
 app.use(errorController)
