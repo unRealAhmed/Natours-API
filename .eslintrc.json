@@ -21,7 +21,7 @@
     "class-methods-use-this": "off",
     "no-undef": "warn",
     "prefer-destructuring": [
-      "error",
+      "warn",
       {
         "object": true,
         "array": false

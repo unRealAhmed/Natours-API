@@ -5,7 +5,7 @@ const mongoSanitize = require("express-mongo-sanitize");
 const helmet = require("helmet");
 const xss = require("xss-clean");
 const hpp = require("hpp");
-const errorController = require('./Controllers/errorController');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 
@@ -32,15 +32,19 @@ const limiter = rateLimit({
   message: 'Too many requests from this IP, please try again in an hour!'
 });
 app.use('/api', limiter);
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 // Routers
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
+const bookingRouter = require('./routes/bookingRoutes');
 
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
+app.use('/api/v1/bookings', bookingRouter);
 /////
 
 app.all("*", (req, _, next) => {
@@ -50,6 +54,9 @@ app.all("*", (req, _, next) => {
 
   next(err);
 });
+
+// Error Handler
+const errorController = require('./Controllers/errorController');
 
 app.use(errorController)
 
