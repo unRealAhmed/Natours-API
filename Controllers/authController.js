@@ -20,22 +20,36 @@ const sendTokenResponse = (res, user, statusCode) => {
 };
 
 //SIGNUP
-exports.signUp = asyncHandler(async (req, res, next) => {
+exports.signup = asyncHandler(async (req, res, next) => {
+  const { name, email, password, passwordConfirm } = req.body;
+
+  const emailAlreadyExists = await User.findOne({ email });
+
+  if (emailAlreadyExists) {
+    return next(new AppError('Email already exists', 400));
+  }
+
   const newUser = await User.create({
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
-    passwordConfirm: req.body.passwordConfirm
+    name,
+    email,
+    password,
+    passwordConfirm
   });
 
   newUser.password = undefined;
 
-  const url = `${req.protocol}://${req.get('host')}/me`
-  const message = `Welcome to the Natours community, ${newUser.name}! 🌍 We're thrilled to have you join us on this exciting adventure. Get ready to explore breathtaking destinations, make new friends, and create unforgettable memories. Start your journey now and let's make every trip extraordinary together! 🎉✈️`
+  const url = `${req.protocol}://${req.get('host')}/me`;
+  const welcomeEmail = new Email(newUser, url);
 
-  await new Email(newUser, url).sendWelcomeEmail('Welcome To Natours Family', message)
-
-  sendTokenResponse(res, newUser, 201);
+  // Send welcome email asynchronously
+  welcomeEmail.sendWelcomeEmail()
+    .then(() => {
+      sendTokenResponse(res, newUser, 201);
+    })
+    .catch((error) => {
+      console.error('Error sending welcome email:', error);
+      sendTokenResponse(res, newUser, 201);
+    });
 });
 
 //LOGIN
