@@ -1,4 +1,7 @@
 const nodemailer = require('nodemailer');
+const EventEmitter = require('events');
+
+const emailEventEmitter = new EventEmitter();
 
 module.exports = class Email {
   constructor(user, url) {
@@ -8,32 +11,8 @@ module.exports = class Email {
     this.from = 'Natours Team <ahmed@natours.io>';
   }
 
-  // Create a new email transport based on the environment
-  newTransport() {
-    if (process.env.NODE_ENV === 'production') {
-      return nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.GOOGLE_EMAIL,
-          pass: process.env.GOOGLE_PASS_KEY,
-        },
-      });
-    }
-
-    // Development environment
-    return nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT,
-      auth: {
-        user: process.env.EMAIL_USERNAME,
-        pass: process.env.EMAIL_PASSWORD
-      }
-    });
-  }
-
   // Send an email with specified subject and message
   async send(subject, message) {
-    // Define email options
     const mailOptions = {
       from: this.from,
       to: this.to,
@@ -41,17 +20,36 @@ module.exports = class Email {
       text: message,
     };
 
-    // Create a transport and send the email
-    await this.newTransport().sendMail(mailOptions);
+    // Emit the 'sendEmail' event with mailOptions
+    emailEventEmitter.emit('sendEmail', mailOptions);
   }
 
-  // Send a welcome email
-  async sendWelcomeEmail(subject, message) {
+  async sendWelcomeEmail() {
+    const subject = 'Welcome To Natours Family🚀';
+    const message = `Welcome to the Natours community, ${this.firstName}! 🌍 We're thrilled to have you join us on this exciting adventure. Get ready to explore breathtaking destinations, make new friends, and create unforgettable memories. Start your journey now and let's make every trip extraordinary together! 🎉✈️`
+
     await this.send(subject, message);
   }
 
-  // Send a password reset email
-  async sendPasswordResetEmail(subject, message) {
+  async sendPasswordResetEmail(message) {
+    const subject = "Password Reset Request for Your Natours Account 🛡️"
     await this.send(subject, message);
   }
 };
+
+emailEventEmitter.on('sendEmail', async (mailOptions) => {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GOOGLE_EMAIL,
+      pass: process.env.GOOGLE_PASS_KEY,
+    },
+  });
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('Email sent successfully');
+  } catch (error) {
+    console.error('Error sending email:', error);
+  }
+});
