@@ -209,28 +209,33 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
 
 //UPDATE PASSWORD
 exports.updatePassword = asyncHandler(async (req, res, next) => {
+
+  const { oldPassword, newPassword } = req.body;
+  if (!oldPassword || !newPassword) {
+    return next(new AppError('Please provide both values', 400))
+  }
+
   // 1) Find the user by ID and select the password field
   const user = await User.findById(req.user._id).select("+password");
-
   // 2) Check if the entered current password is correct
   const isPasswordCorrect = await user.passwordMatching(
-    req.body.currentPassword,
+    oldPassword,
     user.password
   );
 
   if (!isPasswordCorrect) {
     return next(new AppError("Your current password is incorrect", 401));
   }
-
   // 3) Update the user's password with the new one and save the changes
-  user.password = req.body.password;
+  user.password = req.body.newPassword;
   user.passwordConfirm = req.body.passwordConfirm;
   await user.save();
 
   user.password = undefined;
 
-  sendTokenResponse(res, user, 201);
+  sendTokenResponse(res, user, 200);
 });
+
 
 exports.restrictTo = (...permittedRoles) => (req, res, next) => {
   const userRole = req.user.role;
