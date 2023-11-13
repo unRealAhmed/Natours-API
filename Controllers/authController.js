@@ -6,6 +6,7 @@ const User = require('../models/userModel')
 const createToken = require('../utilities/createToken')
 const AppError = require('../utilities/appErrors')
 const Email = require('../utilities/email')
+const { resetHtmlTemplate } = require('../utilities/resetPasswordTemplate')
 
 // Helper function to send JWT token as a response
 const sendTokenResponse = (res, user, statusCode) => {
@@ -144,24 +145,21 @@ exports.forgetPassword = asyncHandler(async (req, res, next) => {
   }
 
   // 2) Generate a password reset token and save it to the user
-  const passwordResetToken = user.createPasswordResetToken();
+  const resetToken = user.createPasswordResetToken();
   await user.save({ validateBeforeSave: false });
 
   // 3) Construct the reset URL and email it to the user
+  const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
+  const html = resetHtmlTemplate(
+    req.protocol,
+    req.headers.host,
+    resetToken,
+  );
+  // Send the password reset email
+  const email = new Email(user, resetURL);
 
   try {
-    // 4) Send the password reset email
-    const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${passwordResetToken}`;
-    const message = `Oops, did you forget your password? No worries! We've got you covered. Simply click on the link below to reset your password and regain access to your Natours account:
-
-    ${resetURL}
-    
-    If you didn't initiate this request, please disregard this email. Your account's security is important to us.
-    
-    Safe travels,
-    The Natours Team 🌍`;
-    const subject = "Password Reset Request for Your Natours Account 🛡️"
-    await new Email(user, resetURL).sendPasswordResetEmail(subject, message)
+    await email.sendPasswordResetEmail(html);
 
     res.status(200).json({
       status: 'success',
