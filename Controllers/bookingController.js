@@ -83,10 +83,12 @@ exports.webhookCheckout = (req, res, next) => {
   res.status(200).json({ received: true });
 };
 
-exports.createBooking = createOne(Booking);
-exports.getBooking = getOne(Booking);
+const bookingStr = 'booking'
+
 exports.getAllBookings = getAll(Booking);
-exports.updateBooking = updateOne(Booking);
-exports.deleteBooking = deleteOne(Booking);
+exports.createBooking = createOne(Booking);
+exports.getBooking = getOne(Booking, bookingStr);
+exports.updateBooking = updateOne(Booking, bookingStr);
+exports.deleteBooking = deleteOne(Booking, bookingStr);
 
 

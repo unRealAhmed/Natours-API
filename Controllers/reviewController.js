@@ -3,11 +3,12 @@ const { getAll, getOne, updateOne, deleteOne } = require('./resourceController')
 const AppError = require("../utilities/appErrors");
 const asyncHandler = require("../utilities/asyncHandler");
 
+const reviewStr = 'review'
 
 exports.getAllReviews = getAll(Review);
-exports.getReview = getOne(Review);
-exports.updateReview = updateOne(Review);
-exports.deleteReview = deleteOne(Review);
+exports.getReview = getOne(Review, reviewStr);
+exports.updateReview = updateOne(Review, reviewStr);
+exports.deleteReview = deleteOne(Review, reviewStr);
 
 exports.setTourUserIds = (req, res, next) => {
   if (!req.body.tour) req.body.tour = req.params.tourId;

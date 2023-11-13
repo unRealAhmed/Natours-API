@@ -7,11 +7,13 @@ const { getAll, getOne, createOne, updateOne, deleteOne } = require('./resourceC
 
 ////////// Admin Access
 
+const userStr = 'user'
+
 exports.getAllUsers = getAll(User);
-exports.getUser = getOne(User);
 exports.createUser = createOne(User);
-exports.updateUser = updateOne(User);
-exports.deleteUser = deleteOne(User);
+exports.getUser = getOne(User, userStr);
+exports.updateUser = updateOne(User, userStr);
+exports.deleteUser = deleteOne(User, userStr);
 
 //////////
 

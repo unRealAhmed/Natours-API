@@ -29,7 +29,7 @@ exports.getAll = (Model) =>
   });
 
 // This factory function generates a middleware for handling generic "get one" requests for any resource
-exports.getOne = (Model) =>
+exports.getOne = (Model, docType) =>
   asyncHandler(async (req, res, next) => {
 
     const query = Model.findById(req.params.id);
@@ -39,7 +39,7 @@ exports.getOne = (Model) =>
 
     // Handle the case when no document is found with the provided ID.
     if (!doc) {
-      return next(new AppError('No document found with that ID', 404));
+      return next(new AppError(`No ${docType} found with that ID`, 404));
     }
 
     // Send the retrieved document as a response.

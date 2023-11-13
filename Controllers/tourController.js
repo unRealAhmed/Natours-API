@@ -6,12 +6,13 @@ const AppError = require('../utilities/appErrors')
 const { getAll, getOne, createOne, updateOne, deleteOne } = require('./resourceController');
 
 ///////
+const tourStr = 'tour'
 
 exports.getAllTours = getAll(Tour);
-exports.getTour = getOne(Tour);
 exports.createTour = createOne(Tour);
-exports.updateTour = updateOne(Tour);
-exports.deleteTour = deleteOne(Tour);
+exports.getTour = getOne(Tour, tourStr);
+exports.updateTour = updateOne(Tour, tourStr);
+exports.deleteTour = deleteOne(Tour, tourStr);
 
 
 const multerStorage = multer.memoryStorage();
