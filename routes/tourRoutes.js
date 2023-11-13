@@ -1,47 +1,64 @@
 const express = require('express');
-const tourController = require('../Controllers/tourController');
-const authController = require('../Controllers/authController');
+const {
+  getTourStatistics,
+  getMonthlyPlan,
+  getTopFiveCheapestTours,
+  getAllTours,
+  createTour,
+  getTour,
+  uploadTourImages,
+  resizeTourImages,
+  updateTour,
+  deleteTour,
+} = require('../Controllers/tourController');
+const {
+  protect,
+  restrictTo,
+} = require('../Controllers/authController');
 const reviewRouter = require('./reviewRoutes');
 
 const router = express.Router();
-
+// Nested route for reviews
 router.use('/:tourId/reviews', reviewRouter);
 
-router.route('/tours-stats').get(tourController.getTourStatistics);
-router
-  .route('/monthly-plan/:year')
-  .get(
-    authController.protect,
-    authController.restrictTo('admin', 'lead-guide', 'guide'),
-    tourController.getMonthlyPlan
-  );
+// Route for tour statistics
+router.route('/tours-stats').get(getTourStatistics);
 
-router.route("/top-5-cheapest")
-  .get(tourController.getTopFiveCheapestTours, tourController.getAllTours);
+// Route for monthly plan
+router.route('/monthly-plan/:year').get(
+  protect,
+  restrictTo('admin', 'lead-guide', 'guide'),
+  getMonthlyPlan
+);
 
-router
-  .route('/')
-  .get(tourController.getAllTours)
+// Route for top 5 cheapest tours
+router.route('/top-5-cheapest').get(
+  getTopFiveCheapestTours,
+  getAllTours
+);
+
+// Routes for CRUD operations on tours
+router.route('/')
+  .get(getAllTours)
   .post(
-    authController.protect,
-    authController.restrictTo('admin', 'lead-guide'),
-    tourController.createTour
+    protect,
+    restrictTo('admin', 'lead-guide'),
+    createTour
   );
 
-router
-  .route('/:id')
-  .get(tourController.getTour)
+router.route('/:id')
+  .get(getTour)
   .patch(
-    authController.protect,
-    authController.restrictTo('admin', 'lead-guide'),
-    tourController.uploadTourImages,
-    tourController.resizeTourImages,
-    tourController.updateTour
+    protect,
+    restrictTo('admin', 'lead-guide'),
+    uploadTourImages,
+    resizeTourImages,
+    updateTour
   )
   .delete(
-    authController.protect,
-    authController.restrictTo('admin', 'lead-guide'),
-    tourController.deleteTour
+    protect,
+    restrictTo('admin', 'lead-guide'),
+    deleteTour
   );
 
 module.exports = router;

@@ -2,8 +2,8 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Tour = require('../models/tourModel');
 const Booking = require('../models/bookingModel');
 const asyncHandler = require('../utilities/asyncHandler');
-const resourceController = require('./resourceController');
 const User = require('../models/userModel');
+const { createOne, getOne, getAll, updateOne, deleteOne } = require('./resourceController');
 
 const endpointSecret = process.env.END_POINT_SECRET;
 
@@ -83,9 +83,10 @@ exports.webhookCheckout = (req, res, next) => {
   res.status(200).json({ received: true });
 };
 
-exports.createBooking = resourceController.createOne(Booking);
-exports.getBooking = resourceController.getOne(Booking);
-exports.getAllBookings = resourceController.getAll(Booking);
-exports.updateBooking = resourceController.updateOne(Booking);
-exports.deleteBooking = resourceController.deleteOne(Booking);
+exports.createBooking = createOne(Booking);
+exports.getBooking = getOne(Booking);
+exports.getAllBookings = getAll(Booking);
+exports.updateBooking = updateOne(Booking);
+exports.deleteBooking = deleteOne(Booking);
+
 

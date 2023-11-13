@@ -1,5 +1,6 @@
 const Review = require("../models/reviewModel");
-const resourceController = require("./resourceController");
+const { getAll, createOne, getOne, updateOne, deleteOne } = require('./resourceController');
+
 
 exports.setTourUserIds = (req, res, next) => {
   if (!req.body.tour) req.body.tour = req.params.tourId;
@@ -7,8 +8,9 @@ exports.setTourUserIds = (req, res, next) => {
   next();
 };
 
-exports.getAllReviews = resourceController.getAll(Review)
-exports.createReview = resourceController.createOne(Review)
-exports.getReview = resourceController.getOne(Review);
-exports.updateReview = resourceController.updateOne(Review);
-exports.deleteReview = resourceController.deleteOne(Review);
+exports.getAllReviews = getAll(Review);
+exports.createReview = createOne(Review);
+exports.getReview = getOne(Review);
+exports.updateReview = updateOne(Review);
+exports.deleteReview = deleteOne(Review);
+

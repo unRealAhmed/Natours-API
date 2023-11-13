@@ -2,17 +2,17 @@ const multer = require('multer')
 const sharp = require('sharp')
 const Tour = require('../models/tourModel')
 const asyncHandler = require('../utilities/asyncHandler')
-const resourceController = require('./resourceController')
 const AppError = require('../utilities/appErrors')
-
-
-exports.getAllTours = resourceController.getAll(Tour)
-exports.getTour = resourceController.getOne(Tour)
-exports.createTour = resourceController.createOne(Tour)
-exports.updateTour = resourceController.updateOne(Tour)
-exports.deleteTour = resourceController.deleteOne(Tour)
+const { getAll, getOne, createOne, updateOne, deleteOne } = require('./resourceController');
 
 ///////
+
+exports.getAllTours = getAll(Tour);
+exports.getTour = getOne(Tour);
+exports.createTour = createOne(Tour);
+exports.updateTour = updateOne(Tour);
+exports.deleteTour = deleteOne(Tour);
+
 
 const multerStorage = multer.memoryStorage();
 
@@ -68,7 +68,6 @@ exports.resizeTourImages = asyncHandler(async (req, res, next) => {
 
   next();
 });
-
 
 exports.getTopFiveCheapestTours = asyncHandler(async (req, res, next) => {
   req.query.limit = 5;

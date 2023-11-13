@@ -3,15 +3,15 @@ const sharp = require("sharp")
 const User = require("../models/userModel")
 const asyncHandler = require("../utilities/asyncHandler")
 const AppError = require("../utilities/appErrors")
-const resourceController = require("./resourceController")
+const { getAll, getOne, createOne, updateOne, deleteOne } = require('./resourceController');
 
 ////////// Admin Access
 
-exports.getAllUsers = resourceController.getAll(User)
-exports.getUser = resourceController.getOne(User)
-exports.createUser = resourceController.createOne(User)
-exports.updateUser = resourceController.updateOne(User)
-exports.deleteUser = resourceController.deleteOne(User)
+exports.getAllUsers = getAll(User);
+exports.getUser = getOne(User);
+exports.createUser = createOne(User);
+exports.updateUser = updateOne(User);
+exports.deleteUser = deleteOne(User);
 
 //////////
 
