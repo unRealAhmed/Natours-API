@@ -2,12 +2,18 @@ module.exports = class APIFeatures {
   constructor(query, queryString) {
     this.query = query;
     this.queryString = JSON.parse(JSON.stringify(queryString));
-    this.excludedFields = ['page', 'sort', 'limit', 'fields']; // Fields to exclude from filtering
+    this.excludedFields = ['page', 'sort', 'limit', 'fields', 'search']; // Include 'search' in excludedFields
   }
 
   // Filter the query based on query parameters
   filter() {
-    const queryObj = JSON.parse(JSON.stringify(this.queryString));
+    const queryObj = { ...this.queryString }; // Use object spread for clarity
+
+    // Include the search functionality
+    if (queryObj.search) {
+      queryObj.name = { $regex: queryObj.search, $options: 'i' };
+      delete queryObj.search; // Remove the original search parameter
+    }
 
     const filteredQuery = Object.keys(queryObj)
       .filter(key => !this.excludedFields.includes(key))
@@ -27,9 +33,34 @@ module.exports = class APIFeatures {
   // Sort the query based on the sort parameter
   sort() {
     if (this.queryString.sort) {
-      const sortFields = this.queryString.sort.split(',').join(' ');
+      const { sort } = this.queryString;
+      let sortFields;
+
+      // Add custom sorting options
+      switch (sort) {
+        case 'latest':
+          sortFields = '-createdAt';
+          break;
+        case 'oldest':
+          sortFields = 'createdAt';
+          break;
+        case 'a-z':
+          sortFields = 'name';
+          break;
+        case 'z-a':
+          sortFields = '-name';
+          break;
+        default:
+          // Default sorting by createdAt
+          sortFields = 'createdAt';
+      }
+
       this.query.sort(sortFields);
+    } else {
+      // Default sorting by createdAt if no sort parameter is provided
+      this.query.sort('createdAt');
     }
+
     return this;
   }
 
